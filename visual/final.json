@@ -1,0 +1,2356 @@
+{
+  "paragraphs": [
+    {
+      "title": "IMPORT",
+      "text": "%pyspark\nimport pandas as pd\nimport time\nimport numpy as np\nfrom pyspark.sql.functions import col\nfrom pyspark.sql.functions import monotonically_increasing_id,row_number\nfrom pyspark.sql import Window\nfrom pyspark.sql.types import *\nimport matplotlib.pyplot as plt\nfrom pyspark.sql.functions import *\nfrom pyspark.sql.types import IntegerType\nfrom pyspark.sql.functions import udf\nimport __builtin__ as builtins\n",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:35:05.314",
+      "config": {
+        "tableHide": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "editorHide": false,
+        "title": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1560593147662_-1742560808",
+      "id": "20190611-002658_1689636970",
+      "dateCreated": "2019-06-15 19:05:47.662",
+      "dateStarted": "2019-06-16 04:18:17.891",
+      "dateFinished": "2019-06-16 04:18:34.441",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "DATA_LOAD",
+      "text": "%pyspark\n#Data Load\n\ndf_pizza_2015 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/pizza/pizza_2015.csv\")\ndf_pizza_2016 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/pizza/pizza_2016.csv\")\ndf_pizza_2017 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/pizza/pizza_2017.csv\")\ndf_pizza_2018 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/pizza/pizza_2018.csv\")\ndf_pizza_2019 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/pizza/pizza_2019.csv\")\n\n\n\ndf_pizza_concat \u003d df_pizza_2015.union(df_pizza_2016)\ndf_pizza_concat\u003d df_pizza_concat.union(df_pizza_2017)\ndf_pizza_concat\u003d df_pizza_concat.union(df_pizza_2018)\ndf_pizza_concat\u003d df_pizza_concat.union(df_pizza_2019)\n\ndf_pizza_concat \u003d df_pizza_concat.select(col(\"_c0\").alias(\"Dates\"), col(\"_c1\").alias(\"Day\"),col(\"_c2\").alias(\"Gender\"),\n                  col(\"_c3\").alias(\"Age\"),col(\"_c4\").alias(\"Si\"), col(\"_c5\").alias(\"Gu\"),\n                   col(\"_c6\").alias(\"Store\"),col(\"_c7\").cast(\u0027float\u0027).alias(\"Order\"))\n\ndf_pizza_concat \u003d df_pizza_concat.drop(\"Si\").drop(\"Store\")\n\n##\n\n#df_chicken_2013 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/chicken/chicken_2013.csv\")\ndf_chicken_2014 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/chicken/chicken_2014.csv\")\ndf_chicken_2015 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/chicken/chicken_2015.csv\")\ndf_chicken_2016 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/chicken/chicken_2016.csv\")\ndf_chicken_2017 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/chicken/chicken_2017.csv\")\ndf_chicken_2017\u003ddf_chicken_2017.drop(\"_c6\")\ndf_chicken_2018 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/chicken/chicken_2018.csv\")\ndf_chicken_2018\u003ddf_chicken_2018.drop(\"_c6\")\ndf_chicken_2019 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/chicken/chicken_2019.csv\")\ndf_chicken_2019\u003ddf_chicken_2019.drop(\"_c6\")\n\n\n#df_chicken_concat \u003d df_chicken_2013.union(df_chicken_2014)\ndf_chicken_concat\u003d df_chicken_2014.union(df_chicken_2015)\ndf_chicken_concat\u003d df_chicken_concat.union(df_chicken_2016)\ndf_chicken_concat\u003d df_chicken_concat.union(df_chicken_2017)\ndf_chicken_concat\u003d df_chicken_concat.union(df_chicken_2018)\ndf_chicken_concat\u003d df_chicken_concat.union(df_chicken_2019)\n\ndf_chicken_concat \u003d df_chicken_concat.select(col(\"_c0\").alias(\"Dates\"), col(\"_c1\").alias(\"Day\"),col(\"_c2\").alias(\"Gender\"),\n                  col(\"_c3\").alias(\"Age\"),col(\"_c4\").alias(\"Si\"), col(\"_c5\").alias(\"Gu\"),\n                   col(\"_c6\").alias(\"Store\"),col(\"_c7\").cast(\u0027float\u0027).alias(\"Order\"))\ndf_chicken_concat \u003d df_chicken_concat.drop(\"Si\").drop(\"Store\")\n\n\n##\n\ndf_china_2013 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/china/china_2013.csv\")\ndf_china_2014 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/china/china_2014.csv\")\ndf_china_2015 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/china/china_2015.csv\")\ndf_china_2016 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/china/china_2016.csv\")\ndf_china_2017 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/china/china_2017.csv\")\ndf_china_2017 \u003d df_china_2017.drop(\"_c6\")\ndf_china_2018 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/china/china_2018.csv\")\ndf_china_2018 \u003d df_china_2018.drop(\"_c6\")\ndf_china_2019 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/china/china_2019.csv\")\ndf_china_2019 \u003d df_china_2019.drop(\"_c6\")\n\n\n\ndf_china_concat \u003d df_china_2013.union(df_china_2014)\ndf_china_concat\u003d df_china_concat.union(df_china_2015)\ndf_china_concat\u003d df_china_concat.union(df_china_2016)\ndf_china_concat\u003d df_china_concat.union(df_china_2017)\ndf_china_concat\u003d df_china_concat.union(df_china_2018)\ndf_china_concat\u003d df_china_concat.union(df_china_2019)\n\ndf_china_concat \u003d df_china_concat.select(col(\"_c0\").alias(\"Dates\"), col(\"_c1\").alias(\"Day\"),col(\"_c2\").alias(\"Gender\"),\n                  col(\"_c3\").alias(\"Age\"),col(\"_c4\").alias(\"Si\"), col(\"_c5\").alias(\"Gu\"),\n                   col(\"_c6\").alias(\"Store\"),col(\"_c7\").cast(\u0027float\u0027).alias(\"Order\"))\ndf_china_concat \u003d df_china_concat.drop(\"Si\").drop(\"Store\")\n\n\ndf_people \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"true\").load(\"data/people/preprocessed_age_gender_2019_1.csv\")\ndf_people \u003d df_people.select(col(\"지역\").alias(\"region\"), col(\"성별\").alias(\"gender\"),col(\"10대\").cast(\u0027float\u0027).alias(\"ten\"),\n                  col(\"20대\").cast(\u0027float\u0027).alias(\"twenty\"),col(\"30대\").cast(\u0027float\u0027).alias(\"thirty\"), col(\"40대\").cast(\u0027float\u0027).alias(\"forty\"),\n                   col(\"50대\").cast(\u0027float\u0027).alias(\"fifty\"),col(\"60대이상\").cast(\u0027float\u0027).alias(\"sixty\"))\n\n#Data Load 끝",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:36:45.156",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://127.0.0.1:4040/jobs/job?id\u003d87",
+            "http://127.0.0.1:4040/jobs/job?id\u003d88",
+            "http://127.0.0.1:4040/jobs/job?id\u003d89",
+            "http://127.0.0.1:4040/jobs/job?id\u003d90",
+            "http://127.0.0.1:4040/jobs/job?id\u003d91",
+            "http://127.0.0.1:4040/jobs/job?id\u003d92",
+            "http://127.0.0.1:4040/jobs/job?id\u003d93",
+            "http://127.0.0.1:4040/jobs/job?id\u003d94",
+            "http://127.0.0.1:4040/jobs/job?id\u003d95",
+            "http://127.0.0.1:4040/jobs/job?id\u003d96",
+            "http://127.0.0.1:4040/jobs/job?id\u003d97",
+            "http://127.0.0.1:4040/jobs/job?id\u003d98",
+            "http://127.0.0.1:4040/jobs/job?id\u003d99",
+            "http://127.0.0.1:4040/jobs/job?id\u003d100",
+            "http://127.0.0.1:4040/jobs/job?id\u003d101",
+            "http://127.0.0.1:4040/jobs/job?id\u003d102",
+            "http://127.0.0.1:4040/jobs/job?id\u003d103",
+            "http://127.0.0.1:4040/jobs/job?id\u003d104",
+            "http://127.0.0.1:4040/jobs/job?id\u003d105"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1560593147664_1545156837",
+      "id": "20190611-002710_1153406415",
+      "dateCreated": "2019-06-15 19:05:47.664",
+      "dateStarted": "2019-06-16 04:24:57.651",
+      "dateFinished": "2019-06-16 04:25:00.012",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Visulaization",
+      "text": "%pyspark\n",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:12:39.113",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python",
+        "title": true,
+        "editorHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1560593419376_846386268",
+      "id": "20190615-191019_193349262",
+      "dateCreated": "2019-06-15 19:10:19.376",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "INPUT_JM_1",
+      "text": "%pyspark\nselected_j_gender \u003d z.select(\"Gender\", [(1, \"남자\"),\n                      (2, \"여자\")])\n                      \nselected_j_age \u003d z.select(\"age\", [(1, \"10대\"),\n                      (2, \"20대\"),\n                      (3, \"30대\"),\n                      (4, \"40대\"),\n                      (5, \"50대\"),\n                      (6, \"60대\")])\n                      \nz.z.angularBind(\"gender\", selected_j_gender)\nz.put(\"gender\", selected_j_gender)\n\nz.z.angularBind(\"age\", selected_j_age)\nz.put(\"age\", selected_j_age)\n\nz.z.run(\"20190615-174746_2000183408\")",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:36:46.546",
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 3.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "title": false,
+        "runOnSelectionChange": true,
+        "results": {},
+        "enabled": true,
+        "editorHide": true
+      },
+      "settings": {
+        "params": {
+          "Type": "1",
+          "Gender": 2.0,
+          "age": 5.0
+        },
+        "forms": {
+          "Gender": {
+            "type": "Select",
+            "options": [
+              {
+                "value": 1.0,
+                "displayName": "남자"
+              },
+              {
+                "value": 2.0,
+                "displayName": "여자"
+              }
+            ],
+            "name": "Gender",
+            "displayName": "Gender",
+            "defaultValue": "",
+            "hidden": false
+          },
+          "age": {
+            "type": "Select",
+            "options": [
+              {
+                "value": 1.0,
+                "displayName": "10대"
+              },
+              {
+                "value": 2.0,
+                "displayName": "20대"
+              },
+              {
+                "value": 3.0,
+                "displayName": "30대"
+              },
+              {
+                "value": 4.0,
+                "displayName": "40대"
+              },
+              {
+                "value": 5.0,
+                "displayName": "50대"
+              },
+              {
+                "value": 6.0,
+                "displayName": "60대"
+              }
+            ],
+            "name": "age",
+            "displayName": "age",
+            "defaultValue": "",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1560593147669_1270568432",
+      "id": "20190615-174804_1999307421",
+      "dateCreated": "2019-06-15 19:05:47.669",
+      "dateStarted": "2019-06-16 04:22:11.259",
+      "dateFinished": "2019-06-16 04:22:11.836",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "INPUT_HY_1",
+      "text": "%pyspark\n\nregion\u003dz.select(\"region\", [(\"종로구\",\"종로구\"),\n                    (\"중구\",\"중구\"),\n                     (\"용산구\",\"용산구\"),\n                      (\"성동구\",\"성동구\"),\n                       (\"광진구\",\"광진구\"),\n                        (\"동대문구\",\"동대문구\"),\n                         (\"중랑구\",\"중랑구\"),\n                          (\"성북구\",\"성북구\"),\n                           (\"강북구\",\"강북구\"),\n                            (\"도봉구\",\"도봉구\"),\n                             (\"노원구\",\"노원구\"),\n                             (\"은평구\",\"은평구\"),\n                             (\"서대문구\",\"서대문구\"),\n                             (\"마포구\",\"마포구\"),\n                             (\"양천구\",\"양천구\"),\n                             (\"강서구\",\"강서구\"),\n                             (\"구로구\",\"구로구\"),\n                             (\"영등포구\",\"영등포구\"),\n                             (\"금천구\",\"금천구\"),\n                             (\"동작구\",\"동작구\"),\n                             (\"관악구\",\"관악구\"),\n                              (\"서초구\",\"서초구\"),\n                               (\"강남구\",\"강남구\"),\n                                (\"송파구\",\"송파구\"),\n                                 (\"강동구\",\"강동구\"),])\nz.put(\"hy_input_region\",region)\n\nstore_type\u003dz.select(\"store_type\", [(\"pizza\",\"pizza\"),\n                    (\"chicken\",\"chicken\"),\n                    (\"china\",\"chinese_food\"),\n                    ])\nz.put(\"hy_input_store_type\",store_type)\n\nage\u003dz.select(\"age\", [(\"ten\",\"10대\"),\n                    (\"twenty\",\"20대\"),\n                    (\"thirty\",\"30대\"),\n                    (\"forty\",\"40대\"),\n                    (\"fifty\",\"50대\"),\n                    (\"sixty\",\"60대이상\"),\n                    ])\nz.put(\"hy_input_age\",age)\n\ngender\u003dz.select(\"gender\", [(\"남\",\"남\"),\n                    (\"여\",\"여\"),\n                    ])\nz.put(\"hy_input_gender\",gender)\n\nz.z.run(\"20190615-152625_1769513868\")#TO_HY_2",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:32:09.404",
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 5.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "title": false,
+        "runOnSelectionChange": true,
+        "results": {},
+        "enabled": true,
+        "editorHide": true
+      },
+      "settings": {
+        "params": {
+          "region": "중구",
+          "store_type": "chicken",
+          "age": "fifty",
+          "gender": "남"
+        },
+        "forms": {
+          "region": {
+            "type": "Select",
+            "options": [
+              {
+                "value": "종로구",
+                "displayName": "종로구"
+              },
+              {
+                "value": "중구",
+                "displayName": "중구"
+              },
+              {
+                "value": "용산구",
+                "displayName": "용산구"
+              },
+              {
+                "value": "성동구",
+                "displayName": "성동구"
+              },
+              {
+                "value": "광진구",
+                "displayName": "광진구"
+              },
+              {
+                "value": "동대문구",
+                "displayName": "동대문구"
+              },
+              {
+                "value": "중랑구",
+                "displayName": "중랑구"
+              },
+              {
+                "value": "성북구",
+                "displayName": "성북구"
+              },
+              {
+                "value": "강북구",
+                "displayName": "강북구"
+              },
+              {
+                "value": "도봉구",
+                "displayName": "도봉구"
+              },
+              {
+                "value": "노원구",
+                "displayName": "노원구"
+              },
+              {
+                "value": "은평구",
+                "displayName": "은평구"
+              },
+              {
+                "value": "서대문구",
+                "displayName": "서대문구"
+              },
+              {
+                "value": "마포구",
+                "displayName": "마포구"
+              },
+              {
+                "value": "양천구",
+                "displayName": "양천구"
+              },
+              {
+                "value": "강서구",
+                "displayName": "강서구"
+              },
+              {
+                "value": "구로구",
+                "displayName": "구로구"
+              },
+              {
+                "value": "영등포구",
+                "displayName": "영등포구"
+              },
+              {
+                "value": "금천구",
+                "displayName": "금천구"
+              },
+              {
+                "value": "동작구",
+                "displayName": "동작구"
+              },
+              {
+                "value": "관악구",
+                "displayName": "관악구"
+              },
+              {
+                "value": "서초구",
+                "displayName": "서초구"
+              },
+              {
+                "value": "강남구",
+                "displayName": "강남구"
+              },
+              {
+                "value": "송파구",
+                "displayName": "송파구"
+              },
+              {
+                "value": "강동구",
+                "displayName": "강동구"
+              }
+            ],
+            "name": "region",
+            "displayName": "region",
+            "defaultValue": "",
+            "hidden": false
+          },
+          "store_type": {
+            "type": "Select",
+            "options": [
+              {
+                "value": "pizza",
+                "displayName": "pizza"
+              },
+              {
+                "value": "chicken",
+                "displayName": "chicken"
+              },
+              {
+                "value": "china",
+                "displayName": "chinese_food"
+              }
+            ],
+            "name": "store_type",
+            "displayName": "store_type",
+            "defaultValue": "",
+            "hidden": false
+          },
+          "age": {
+            "type": "Select",
+            "options": [
+              {
+                "value": "ten",
+                "displayName": "10대"
+              },
+              {
+                "value": "twenty",
+                "displayName": "20대"
+              },
+              {
+                "value": "thirty",
+                "displayName": "30대"
+              },
+              {
+                "value": "forty",
+                "displayName": "40대"
+              },
+              {
+                "value": "fifty",
+                "displayName": "50대"
+              },
+              {
+                "value": "sixty",
+                "displayName": "60대이상"
+              }
+            ],
+            "name": "age",
+            "displayName": "age",
+            "defaultValue": "",
+            "hidden": false
+          },
+          "gender": {
+            "type": "Select",
+            "options": [
+              {
+                "value": "남",
+                "displayName": "남"
+              },
+              {
+                "value": "여",
+                "displayName": "여"
+              }
+            ],
+            "name": "gender",
+            "displayName": "gender",
+            "defaultValue": "",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1560593147664_718679045",
+      "id": "20190615-160719_400754408",
+      "dateCreated": "2019-06-15 19:05:47.664",
+      "dateStarted": "2019-06-16 04:25:29.191",
+      "dateFinished": "2019-06-16 04:25:29.910",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "INPUT_HY_3",
+      "text": "%pyspark\nstart_date\u003dz.textbox(\"start date: ex)20180101\")\nz.put(\"hy_input_start_date\", start_date)\n\nend_date\u003dz.textbox(\"end date: ex)20181231\")\nz.put(\"hy_input_end_date\", end_date)\n\nshow_type\u003dz.select(\"Daily / Monthly\", [(\"Daily\",\"Daily\"),\n                    (\"Monthly\",\"Monthly\"),\n                    ])\nz.put(\"hy_show_type\",show_type)\n\nselect_start_date \u003dz.get(\"hy_input_start_date\")\nselect_end_date \u003dz.get(\"hy_input_end_date\")\nselect_show_type \u003d z.get(\"hy_show_type\")\n\n#hy query 구성\nstart_time\u003dtime.time()\n\nif(select_show_type\u003d\u003d\"Daily\"):\n    query\u003d\"select * from end_df where Dates\u003e\u003d\"+select_start_date+\" and Dates\u003c\u003d\"+select_end_date\n\nelif (select_show_type\u003d\u003d\"Monthly\"):\n    query \u003d \"SELECT SUBSTRING(Dates,1,6), AVG(Other_Order), AVG(Order) FROM end_df WHERE Dates\u003e\u003d\" +select_start_date+\" and Dates\u003c\u003d\"+select_end_date+\" GROUP BY SUBSTRING(Dates,1,6)\"\n\n\nhy_result\u003dsqlContext.sql(query)\nhy_result.registerTempTable(\"hy_result\")\n\nend_time\u003dtime.time()-start_time\n#hy query 구성 끝\n\nz.z.run(\"20190611-003516_140102294\")#TO_HY_4",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:32:27.291",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 4.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "runOnSelectionChange": true,
+        "title": false,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 173.292,
+              "optionOpen": false
+            }
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {
+          "start date: ex)20190101": "20180101",
+          "end date: ex)20191231": "20180301",
+          "Daily / Monthly": "Monthly",
+          "start date: ex)20180101": "20180103",
+          "end date: ex)20181231": "20180505"
+        },
+        "forms": {
+          "start date: ex)20180101": {
+            "type": "TextBox",
+            "name": "start date: ex)20180101",
+            "displayName": "start date: ex)20180101",
+            "defaultValue": "",
+            "hidden": false
+          },
+          "end date: ex)20181231": {
+            "type": "TextBox",
+            "name": "end date: ex)20181231",
+            "displayName": "end date: ex)20181231",
+            "defaultValue": "",
+            "hidden": false
+          },
+          "Daily / Monthly": {
+            "type": "Select",
+            "options": [
+              {
+                "value": "Daily",
+                "displayName": "Daily"
+              },
+              {
+                "value": "Monthly",
+                "displayName": "Monthly"
+              }
+            ],
+            "name": "Daily / Monthly",
+            "displayName": "Daily / Monthly",
+            "defaultValue": "",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1560593147665_-1866428731",
+      "id": "20190611-003138_1709815433",
+      "dateCreated": "2019-06-15 19:05:47.665",
+      "dateStarted": "2019-06-16 04:26:02.323",
+      "dateFinished": "2019-06-16 04:26:02.430",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "POPULATION_VISUALIZATION_JM_3",
+      "text": "%angular\n\n\u003clink rel\u003d\"stylesheet\" href\u003d\"https://unpkg.com/leaflet@1.0.3/dist/leaflet.css\" /\u003e\n\u003cdiv id\u003d\"map\" style\u003d\"height:650px;\"\u003e \u003c/div\u003e\n\u003cscript type\u003d\"text/javascript\"\u003e\n\nif (window.L) {\n    initMap();\n} else {\n    console.log(\u0027Loading Leaflet library\u0027);\n    var sc \u003d document.createElement(\u0027script\u0027);\n    sc.type \u003d \u0027text/javascript\u0027;\n    sc.src \u003d \u0027https://unpkg.com/leaflet@1.0.3/dist/leaflet.js\u0027;\n    sc.onload \u003d initMap;\n    sc.onerror \u003d function(err) { alert(err); }\n    document.getElementsByTagName(\u0027head\u0027)[0].appendChild(sc);\n}\n\n\n\nfunction initMap() {\n\n    var scope \u003d angular.element($(\"#map\").parent(\u0027.ng-scope\u0027)).scope().compiledScope;\n    var map \u003d L.map(\u0027map\u0027).setView([37.550927, 127.009901], 12);\n    L.tileLayer(\"http://{s}.tile.osm.org/{z}/{x}/{y}.png\").addTo(map);\n        var myRenderer \u003d L.canvas({ padding: 0.5 });\n\n    console.log(scope.myData)\n    for(var i \u003d 0 ; i\u003c 25; i++)\n    {\n        // draw circles on Lat Long provided \n        L.circleMarker([scope.myData[i][3], scope.myData[i][4]], {\n                    renderer : myRenderer,\n            radius: scope.myData[i][1] / 1000 ,\n            color: myColor(scope.gender,scope.age),\n        }).addTo(map);\n    }\n    \n}\n\nfunction myColor(gender, age)\n{\n    if(gender \u003d\u003d 1)\n    {     \n        if(age \u003d\u003d 1)\n        {    \n            return \u0027#2196F3\u0027\n        }\n        else if(age \u003d\u003d2)\n        {\n            return \u0027#1766A6\u0027\n        }\n        else if(age \u003d\u003d3)\n        {\n            return \u0027#14568C\u0027\n        }\n        else if(age \u003d\u003d4)\n        {\n            return \u0027#0E3F66\u0027\n        }\n        else if(age \u003d\u003d5)\n        {\n            return \u0027#002A4D\u0027\n        }\n        else\n        {\n            return \u0027#071F33\u0027\n        }\n    }\n    else\n    {\n        if(age \u003d\u003d 1)\n        {\n            return \u0027#F44336\u0027\n        }\n        else if(age \u003d\u003d2)\n        {      \n            return \u0027#FF8880\u0027\n        }\n        else if(age \u003d\u003d3)\n        {\n            return \u0027#A62C23\u0027\n        }\n        else if(age \u003d\u003d4)\n        {\n            return \u0027#8C251D\u0027\n        }\n        else if(age \u003d\u003d5)\n        {\n            return \u0027#661B15\u0027\n        }\n        else\n        {\n            return \u0027#4D1410\u0027\n        }\n    }\n}\n\u003c/script\u003e",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:06:49.533",
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": true,
+          "completionKey": "TAB",
+          "completionSupport": false
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/undefined",
+        "fontSize": 9.0,
+        "title": true,
+        "results": {},
+        "enabled": true,
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "ANGULAR",
+            "data": "\u003clink rel\u003d\"stylesheet\" href\u003d\"https://unpkg.com/leaflet@1.0.3/dist/leaflet.css\" /\u003e\n\u003cdiv id\u003d\"map\" style\u003d\"height:650px;\"\u003e \u003c/div\u003e\n\u003cscript type\u003d\"text/javascript\"\u003e\n\nif (window.L) {\n    initMap();\n} else {\n    console.log(\u0027Loading Leaflet library\u0027);\n    var sc \u003d document.createElement(\u0027script\u0027);\n    sc.type \u003d \u0027text/javascript\u0027;\n    sc.src \u003d \u0027https://unpkg.com/leaflet@1.0.3/dist/leaflet.js\u0027;\n    sc.onload \u003d initMap;\n    sc.onerror \u003d function(err) { alert(err); }\n    document.getElementsByTagName(\u0027head\u0027)[0].appendChild(sc);\n}\n\n\n\nfunction initMap() {\n\n    var scope \u003d angular.element($(\"#map\").parent(\u0027.ng-scope\u0027)).scope().compiledScope;\n    var map \u003d L.map(\u0027map\u0027).setView([37.550927, 127.009901], 12);\n    L.tileLayer(\"http://{s}.tile.osm.org/{z}/{x}/{y}.png\").addTo(map);\n        var myRenderer \u003d L.canvas({ padding: 0.5 });\n\n    console.log(scope.myData)\n    for(var i \u003d 0 ; i\u003c 25; i++)\n    {\n        // draw circles on Lat Long provided \n        L.circleMarker([scope.myData[i][3], scope.myData[i][4]], {\n                    renderer : myRenderer,\n            radius: scope.myData[i][1] / 1000 ,\n            color: myColor(scope.gender,scope.age),\n        }).addTo(map);\n    }\n    \n}\n\nfunction myColor(gender, age)\n{\n    if(gender \u003d\u003d 1)\n    {     \n        if(age \u003d\u003d 1)\n        {    \n            return \u0027#2196F3\u0027\n        }\n        else if(age \u003d\u003d2)\n        {\n            return \u0027#1766A6\u0027\n        }\n        else if(age \u003d\u003d3)\n        {\n            return \u0027#14568C\u0027\n        }\n        else if(age \u003d\u003d4)\n        {\n            return \u0027#0E3F66\u0027\n        }\n        else if(age \u003d\u003d5)\n        {\n            return \u0027#002A4D\u0027\n        }\n        else\n        {\n            return \u0027#071F33\u0027\n        }\n    }\n    else\n    {\n        if(age \u003d\u003d 1)\n        {\n            return \u0027#F44336\u0027\n        }\n        else if(age \u003d\u003d2)\n        {      \n            return \u0027#FF8880\u0027\n        }\n        else if(age \u003d\u003d3)\n        {\n            return \u0027#A62C23\u0027\n        }\n        else if(age \u003d\u003d4)\n        {\n            return \u0027#8C251D\u0027\n        }\n        else if(age \u003d\u003d5)\n        {\n            return \u0027#661B15\u0027\n        }\n        else\n        {\n            return \u0027#4D1410\u0027\n        }\n    }\n}\n\u003c/script\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1560593147670_1849202981",
+      "id": "20190615-174733_1070140237",
+      "dateCreated": "2019-06-15 19:05:47.670",
+      "dateStarted": "2019-06-16 04:22:12.964",
+      "dateFinished": "2019-06-16 04:22:12.970",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "REGION_COMPARISION_VISUALIZATION_HY_4",
+      "text": "%sql\nselect * from hy_result",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:32:55.272",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 6.0,
+        "editorMode": "ace/mode/sql",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 701.146,
+              "optionOpen": true,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "substring(Dates, 1, 6)": "string",
+                      "avg(Other_Order)": "string",
+                      "avg(Order)": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "substring(Dates, 1, 6)",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "avg(Order)",
+                  "index": 2.0,
+                  "aggr": "sum"
+                },
+                {
+                  "name": "avg(Other_Order)",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "substring(Dates, 1, 6)\tavg(Other_Order)\tavg(Order)\n201801\t7.989793280636688\t12.180851063829786\n201802\t8.050121286092647\t11.48936170212766\n201805\t7.846454326923077\t11.125\n201803\t7.896912812868023\t11.369565217391305\n201804\t7.632267379527027\t10.387755102040817\n"
+          }
+        ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://127.0.0.1:4040/jobs/job?id\u003d132",
+            "http://127.0.0.1:4040/jobs/job?id\u003d133",
+            "http://127.0.0.1:4040/jobs/job?id\u003d134",
+            "http://127.0.0.1:4040/jobs/job?id\u003d135",
+            "http://127.0.0.1:4040/jobs/job?id\u003d136",
+            "http://127.0.0.1:4040/jobs/job?id\u003d137"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1560593147667_1719620568",
+      "id": "20190611-003516_140102294",
+      "dateCreated": "2019-06-15 19:05:47.667",
+      "dateStarted": "2019-06-16 04:26:02.487",
+      "dateFinished": "2019-06-16 04:26:12.502",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "HY_2",
+      "text": "%pyspark\n\n#hy end_df 구성\n\n# 위 dynamic form에서 받은거 가져오기\nage\u003dz.get(\"hy_input_age\")\ngender \u003d z.get(\"hy_input_gender\")\n\nregion \u003dz.get(\"hy_input_region\")\nstore_type \u003dz.get(\"hy_input_store_type\")\n\n\n# 이 연령대와 성별에 대해서 25개의 요소로 이루어진 컬럼 한줄이 출력되어야 함.\n\ndf_people_cp \u003ddf_people.select([c for c in df_people.columns if c in [\u0027region\u0027,\u0027gender\u0027,age]])\n\ndf_people_cp \u003d (df_people_cp.filter(df_people_cp.gender\u003d\u003dgender)).sort(col(age).asc())\n\ndf_people_w_c \u003d df_people_cp.withColumn(\n    \"index\",\n    row_number().over(Window.orderBy(monotonically_increasing_id()))-1\n)\ninput_region_df \u003d df_people_w_c.filter((df_people_w_c.region)\u003d\u003dregion)\ninput_region_index \u003d input_region_df.select(\u0027index\u0027).collect()[0][\u0027index\u0027] \n#그 지역의 index 추출완료\n\n# 해당 인덱스를 기준으로 5개의 index list 추출\n\nif input_region_index \u003d\u003d0 or input_region_index \u003d\u003d1 :\n    indexlist\u003d[0,1,2,3,4]\nelif input_region_index\u003d\u003d23 or input_region_index\u003d\u003d24:\n    indexlist\u003d[20,21,22,23,24]\nelse:\n    #나머지\n    indexlist\u003d[input_region_index-2,input_region_index-1,input_region_index,input_region_index+1,input_region_index+2]\n\n#index list를 기준으로 region list 추출해내기 \ndf_similar_region\u003ddf_people_w_c.filter((df_people_w_c.index) .isin(indexlist)).select(\u0027region\u0027)\n\n#이게 최종 유사 지역 list \nsimilar_region_list \u003d [(row.region) for row in df_similar_region.collect()]\nage_dict\u003d{\"ten\":\"10대\",\"twenty\":\"20대\",\"thirty\":\"30대\",\"forty\":\"40대\",\"fifty\":\"50대\",\"sixty\":\"60대이상\"}\nage_value \u003d age_dict[age]\n\nif(store_type \u003d\u003d\"chicken\"):\n    final_df\u003ddf_chicken_concat.filter((df_chicken_concat.Gu).isin(similar_region_list) \u0026 \n                                 (df_chicken_concat.Age\u003d\u003dage_value) \u0026\n                                 (df_chicken_concat.Gender \u003d\u003d gender)                            \n                                 )\n\n    \nelif (store_type \u003d\u003d \"pizza\"):\n    final_df\u003ddf_pizza_concat.filter((df_pizza_concat.Gu).isin(similar_region_list) \u0026 \n                                 (df_pizza_concat.Age\u003d\u003dage_value) \u0026\n                                 (df_pizza_concat.Gender \u003d\u003d gender)                            \n                                 )\nelse:\n    final_df\u003ddf_china_concat.filter((df_china_concat.Gu).isin(similar_region_list) \u0026 \n                                 (df_china_concat.Age\u003d\u003dage_value) \u0026\n                                 (df_china_concat.Gender \u003d\u003d gender)                            \n                                 )\n#이게 날짜 , 비슷한 5개지역의 주문 평균량 을 나타낸 표\navg_final_df \u003d  final_df.groupby(\u0027Dates\u0027).agg({\u0027Order\u0027:\u0027mean\u0027}).sort(col(\u0027Dates\u0027).asc())\n\n#이게 날짜, 선택한 지역에 대한 주문량 나타낸 표 \ninput_region_final_df \u003d final_df.filter(final_df.Gu\u003d\u003dregion).select([c for c in final_df.columns if c in [\u0027Dates\u0027,\u0027Order\u0027]])\n \n#이 두개 합치기 \nend_df \u003d avg_final_df.join(input_region_final_df, \"Dates\").select(col(\"Dates\").alias(\"Dates\"),col(\"avg(Order)\").alias(\"Other_Order\"),\ncol(\"Order\").alias(\"Order\"))\n\n############\nsqlContext.registerDataFrameAsTable(end_df,\"end_df\")\n#hy end_df 구성 끝\n\nz.z.run(\"20190611-003138_1709815433\")#TO_HY_3",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:32:41.806",
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "editorHide": true,
+        "title": false,
+        "runOnSelectionChange": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {
+                    "columns": [
+                      {
+                        "name": "region",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {},
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      },
+                      {
+                        "name": "gender",
+                        "visible": true,
+                        "width": "*",
+                        "sort": {
+                          "priority": 0.0,
+                          "direction": "asc"
+                        },
+                        "filters": [
+                          {}
+                        ],
+                        "pinned": ""
+                      }
+                    ],
+                    "scrollFocus": {},
+                    "selection": [],
+                    "grouping": {
+                      "grouping": [],
+                      "aggregations": [],
+                      "rowExpandedStates": {}
+                    },
+                    "treeView": {},
+                    "pagination": {
+                      "paginationCurrentPage": 1.0,
+                      "paginationPageSize": 250.0
+                    }
+                  },
+                  "tableColumnTypeState": {
+                    "names": {
+                      "Dates": "string",
+                      "Day": "string",
+                      "Gender": "string",
+                      "Age": "string",
+                      "Gu": "string",
+                      "Order": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          },
+          "1": {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "region": "string",
+                      "gender": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "enabled": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {
+          "region": "중구",
+          "store_type": "chicken",
+          "age": "thirty",
+          "gender": "여"
+        },
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://127.0.0.1:4040/jobs/job?id\u003d128",
+            "http://127.0.0.1:4040/jobs/job?id\u003d129",
+            "http://127.0.0.1:4040/jobs/job?id\u003d130",
+            "http://127.0.0.1:4040/jobs/job?id\u003d131"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1560593147665_645248784",
+      "id": "20190615-152625_1769513868",
+      "dateCreated": "2019-06-15 19:05:47.665",
+      "dateStarted": "2019-06-16 04:26:01.552",
+      "dateFinished": "2019-06-16 04:26:02.320",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "JM_2",
+      "text": "%pyspark\n\n\ndf_people \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"true\").load(\"data/people/preprocessed_age_gender_2019_1.csv\")\ndf_people \u003d df_people.toDF(\u0027region\u0027,\u0027gender\u0027,\u0027age_10s\u0027,\u0027age_20s\u0027,\u0027age_30s\u0027,\u0027age_40s\u0027,\u0027age_50s\u0027,\u0027age_60s\u0027)\ndf_people \u003d df_people.withColumn(\"age_10s\", df_people[\"age_10s\"].cast(IntegerType()))\ndf_people \u003d df_people.withColumn(\"age_20s\", df_people[\"age_20s\"].cast(IntegerType()))\ndf_people \u003d df_people.withColumn(\"age_30s\", df_people[\"age_30s\"].cast(IntegerType()))\ndf_people \u003d df_people.withColumn(\"age_40s\", df_people[\"age_40s\"].cast(IntegerType()))\ndf_people \u003d df_people.withColumn(\"age_50s\", df_people[\"age_50s\"].cast(IntegerType()))\ndf_people \u003d df_people.withColumn(\"age_60s\", df_people[\"age_60s\"].cast(IntegerType()))\n    \nmySchema \u003d StructType([StructField(\"region\", StringType()), StructField(\"lat\", FloatType()), StructField(\"lang\", FloatType())])\nregion_data \u003d [[u\"강남구\", 37.495478, 127.048960],\n[u\"강동구\", 37.549561, 127.146942],\n[u\"강북구\", 37.633931, 127.017945],\n[u\"강서구\", 37.561020, 126.822034],\n[u\"관악구\", 37.466396, 126.946308],\n[u\"광진구\", 37.545036, 127.086385],\n[u\"구로구\", 37.494802, 126.856324],\n[u\"금천구\", 37.460524, 126.901438],\n[u\"노원구\", 37.651740, 127.074565],\n[u\"도봉구\", 37.668531, 127.032792],\n[u\"동대문구\", 37.582159, 127.060172],\n[u\"동작구\", 37.498870, 126.950902],\n[u\"마포구\", 37.569199, 126.898254],\n[u\"서대문구\", 37.576771, 126.939605],\n[u\"서초구\", 37.470812, 127.028957],\n[u\"성동구\", 37.549635, 127.041321],\n[u\"성북구\", 37.604361, 127.028713],\n[u\"송파구\", 37.504049, 127.116181],\n[u\"양천구\", 37.524154, 126.855877],\n[u\"영등포구\", 37.520961, 126.909378],\n[u\"용산구\", 37.530580, 126.979894],\n[u\"은평구\", 37.617228, 126.926976],\n[u\"종로구\", 37.593150, 126.977055],\n[u\"중구\", 37.559645, 126.995711],\n[u\"중랑구\", 37.597080, 127.092445]]\ndf_latlang \u003d spark.createDataFrame(region_data,schema\u003dmySchema) \n\nif z.get(\"gender\") \u003d\u003d 1:\n    df_gender \u003d df_people.filter(df_people.gender \u003d\u003d \"남\")\nelse:\n    df_gender \u003d df_people.filter(df_people.gender \u003d\u003d \"여\")\n    \nif z.get(\"age\") \u003d\u003d 1:\n    df_gender \u003d df_gender.select(\u0027region\u0027, \u0027age_10s\u0027)\nelif z.get(\"age\") \u003d\u003d2:\n    df_gender \u003d df_gender.select(\u0027region\u0027, \u0027age_20s\u0027)\nelif z.get(\"age\") \u003d\u003d3:\n    df_gender \u003d df_gender.select(\u0027region\u0027, \u0027age_30s\u0027)\nelif z.get(\"age\") \u003d\u003d4:\n    df_gender \u003d df_gender.select(\u0027region\u0027, \u0027age_40s\u0027)\nelif z.get(\"age\") \u003d\u003d5:\n    df_gender \u003d df_gender.select(\u0027region\u0027, \u0027age_50s\u0027)\nelse :\n    df_gender \u003d df_gender.select(\u0027region\u0027, \u0027age_60s\u0027)\n    \ndf_joined \u003d df_gender.join(df_latlang, df_gender.region \u003d\u003d df_latlang.region)\nnumpy_matrix \u003d np.array(df_joined.collect())\nz.z.angularBind(\"myData\", numpy_matrix)\n    \nz.z.run(\"20190615-174733_1070140237\")\n",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:32:45.924",
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "fontSize": 9.0,
+        "title": false,
+        "results": {},
+        "enabled": true,
+        "editorHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://127.0.0.1:4040/jobs/job?id\u003d43",
+            "http://127.0.0.1:4040/jobs/job?id\u003d44",
+            "http://127.0.0.1:4040/jobs/job?id\u003d45"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1560593147669_1543623659",
+      "id": "20190615-174746_2000183408",
+      "dateCreated": "2019-06-15 19:05:47.669",
+      "dateStarted": "2019-06-16 04:22:11.836",
+      "dateFinished": "2019-06-16 04:22:12.964",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "INPUT_KS_1",
+      "text": "%pyspark\nregion\u003dz.select(\"region\", [(\"종로구\",\"종로구\"),\n                    (\"중구\",\"중구\"),\n                     (\"용산구\",\"용산구\"),\n                      (\"성동구\",\"성동구\"),\n                       (\"광진구\",\"광진구\"),\n                        (\"동대문구\",\"동대문구\"),\n                         (\"중랑구\",\"중랑구\"),\n                          (\"성북구\",\"성북구\"),\n                           (\"강북구\",\"강북구\"),\n                            (\"도봉구\",\"도봉구\"),\n                             (\"노원구\",\"노원구\"),\n                             (\"은평구\",\"은평구\"),\n                             (\"서대문구\",\"서대문구\"),\n                             (\"마포구\",\"마포구\"),\n                             (\"양천구\",\"양천구\"),\n                             (\"강서구\",\"강서구\"),\n                             (\"구로구\",\"구로구\"),\n                             (\"영등포구\",\"영등포구\"),\n                             (\"금천구\",\"금천구\"),\n                             (\"동작구\",\"동작구\"),\n                             (\"관악구\",\"관악구\"),\n                              (\"서초구\",\"서초구\"),\n                               (\"강남구\",\"강남구\"),\n                                (\"송파구\",\"송파구\"),\n                                 (\"강동구\",\"강동구\"),])\nz.put(\"ks_input_region\",region)\n\nstore_type\u003dz.select(\"store_type\", [(\"pizza\",\"pizza\"),\n                    (\"chicken\",\"chicken\"),\n                    (\"china\",\"chinese_food\"),\n                    ])\nz.put(\"ks_input_store_type\",store_type)\n\nstart_date\u003dz.textbox(\"start date: ex)20180101\")\nz.put(\"ks_input_start_date\", start_date)\nend_date\u003dz.textbox(\"end date: ex)20181231\")\nz.put(\"ks_input_end_date\", end_date)\n\n#ks 문자화\nselect_region\u003dz.get(\"ks_input_region\")\nselect_region\u003dstr(select_region.encode(\u0027utf-8\u0027))\nselect_region_DF\u003dstr(select_region)\nselect_store_type\u003dz.get(\"ks_input_store_type\")\nselect_store_type\u003dstr(select_store_type)\nselect_start_date\u003dz.get(\"ks_input_start_date\")\nselect_start_date\u003dstr(select_start_date)\nselect_end_date\u003dz.get(\"ks_input_end_date\")\nselect_end_date\u003dstr(select_end_date)\nselect_by\u003dz.get(\"ks_By\")\nselect_by\u003dstr(select_by)\n#ks 문자화 끝\n\n#ks dataframe 구성\nif select_store_type \u003d\u003d \"pizza\":\n    df_by_final \u003d df_pizza_concat.filter((df_pizza_concat.Gu\u003d\u003dselect_region_DF) \u0026 (df_pizza_concat.Dates \u003e\u003dselect_start_date) \u0026 (df_pizza_concat.Dates\u003c\u003dselect_end_date ))\nelif select_store_type \u003d\u003d\"chicken\":\n    df_by_final \u003d df_chicken_concat.filter((df_chicken_concat.Gu\u003d\u003dselect_region_DF) \u0026 (df_chicken_concat.Dates \u003e\u003dselect_start_date) \u0026 (df_chicken_concat.Dates\u003c\u003dselect_end_date ))\nelif select_store_type \u003d\u003d\"china\":\n    df_by_final \u003d df_china_concat.filter((df_china_concat.Gu\u003d\u003dselect_region_DF) \u0026 (df_china_concat.Dates \u003e\u003dselect_start_date) \u0026 (df_china_concat.Dates\u003c\u003dselect_end_date ))\nks_df_by_final_day \u003d df_by_final.groupby(\u0027Day\u0027).agg({\u0027Order\u0027:\u0027sum\u0027})\n\ndef make_order(day):\n    if day\u003d\u003du\"월\":\n        return 0\n    elif day \u003d\u003du\"화\":\n        return 1\n    elif day \u003d\u003du\"수\":\n        return 2\n    elif day \u003d\u003du\"목\":\n        return 3\n    elif day \u003d\u003du\"금\":\n        return 4\n    elif day \u003d\u003du\"토\":\n        return 5\n    else:\n        return 6\n        \n\nudf_make_order \u003d udf(make_order,IntegerType())\nks_df_by_final_day\u003dks_df_by_final_day.withColumn(\u0027day_order\u0027,udf_make_order(ks_df_by_final_day[\u0027Day\u0027]))\nks_df_by_final_day\u003dks_df_by_final_day.sort(\u0027day_order\u0027).drop(\u0027day_order\u0027)\n\nks_df_by_final_gender \u003d df_by_final.groupby(\u0027Gender\u0027).agg({\u0027Order\u0027:\u0027sum\u0027}).sort(col(\u0027Gender\u0027).asc())\nks_df_by_final_age \u003d df_by_final.groupby(\u0027Age\u0027).agg({\u0027Order\u0027:\u0027sum\u0027}).sort(col(\u0027Age\u0027).asc())\n\nks_df_by_final_day.registerTempTable(\"ks_result_day\")\nks_df_by_final_gender.registerTempTable(\"ks_result_gender\")\nks_df_by_final_age.registerTempTable(\"ks_result_age\")\n\n#ks dataframe 구성 끝\n\n\nz.z.run(\"20190615-224408_1463951148\")#요일별\nz.z.run(\"20190615-225158_1851806213\")\nz.z.run(\"20190615-225207_1668899777\")\nz.z.run(\"20190615-225958_720293929\")",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:33:02.684",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python",
+        "title": false,
+        "editorHide": true,
+        "runOnSelectionChange": true
+      },
+      "settings": {
+        "params": {
+          "region": "강서구",
+          "store_type": "china",
+          "start date: ex)20180101": "20170202",
+          "end date: ex)20181231": "20170624",
+          "By": "Day"
+        },
+        "forms": {
+          "region": {
+            "type": "Select",
+            "options": [
+              {
+                "value": "종로구",
+                "displayName": "종로구"
+              },
+              {
+                "value": "중구",
+                "displayName": "중구"
+              },
+              {
+                "value": "용산구",
+                "displayName": "용산구"
+              },
+              {
+                "value": "성동구",
+                "displayName": "성동구"
+              },
+              {
+                "value": "광진구",
+                "displayName": "광진구"
+              },
+              {
+                "value": "동대문구",
+                "displayName": "동대문구"
+              },
+              {
+                "value": "중랑구",
+                "displayName": "중랑구"
+              },
+              {
+                "value": "성북구",
+                "displayName": "성북구"
+              },
+              {
+                "value": "강북구",
+                "displayName": "강북구"
+              },
+              {
+                "value": "도봉구",
+                "displayName": "도봉구"
+              },
+              {
+                "value": "노원구",
+                "displayName": "노원구"
+              },
+              {
+                "value": "은평구",
+                "displayName": "은평구"
+              },
+              {
+                "value": "서대문구",
+                "displayName": "서대문구"
+              },
+              {
+                "value": "마포구",
+                "displayName": "마포구"
+              },
+              {
+                "value": "양천구",
+                "displayName": "양천구"
+              },
+              {
+                "value": "강서구",
+                "displayName": "강서구"
+              },
+              {
+                "value": "구로구",
+                "displayName": "구로구"
+              },
+              {
+                "value": "영등포구",
+                "displayName": "영등포구"
+              },
+              {
+                "value": "금천구",
+                "displayName": "금천구"
+              },
+              {
+                "value": "동작구",
+                "displayName": "동작구"
+              },
+              {
+                "value": "관악구",
+                "displayName": "관악구"
+              },
+              {
+                "value": "서초구",
+                "displayName": "서초구"
+              },
+              {
+                "value": "강남구",
+                "displayName": "강남구"
+              },
+              {
+                "value": "송파구",
+                "displayName": "송파구"
+              },
+              {
+                "value": "강동구",
+                "displayName": "강동구"
+              }
+            ],
+            "name": "region",
+            "displayName": "region",
+            "defaultValue": "",
+            "hidden": false
+          },
+          "store_type": {
+            "type": "Select",
+            "options": [
+              {
+                "value": "pizza",
+                "displayName": "pizza"
+              },
+              {
+                "value": "chicken",
+                "displayName": "chicken"
+              },
+              {
+                "value": "china",
+                "displayName": "chinese_food"
+              }
+            ],
+            "name": "store_type",
+            "displayName": "store_type",
+            "defaultValue": "",
+            "hidden": false
+          },
+          "start date: ex)20180101": {
+            "type": "TextBox",
+            "name": "start date: ex)20180101",
+            "displayName": "start date: ex)20180101",
+            "defaultValue": "",
+            "hidden": false
+          },
+          "end date: ex)20181231": {
+            "type": "TextBox",
+            "name": "end date: ex)20181231",
+            "displayName": "end date: ex)20181231",
+            "defaultValue": "",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1560601409578_-1903427590",
+      "id": "20190615-212329_531105684",
+      "dateCreated": "2019-06-15 21:23:29.578",
+      "dateStarted": "2019-06-16 04:26:46.238",
+      "dateFinished": "2019-06-16 04:27:00.213",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "KS_요일별",
+      "text": "%sql\nselect * from ks_result_day",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:32:55.329",
+      "config": {
+        "colWidth": 4.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "Day": "string",
+                      "sum(Order)": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "xLabelStatus": "default",
+                  "rotate": {
+                    "degree": "-45"
+                  }
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "Day",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "sum(Order)",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "tableHide": false,
+        "editorHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "Day\tsum(Order)\n월\t19690.0\n화\t22152.0\n수\t22148.0\n목\t22554.0\n금\t24874.0\n토\t33253.0\n일\t33843.0\n"
+          }
+        ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://127.0.0.1:4040/jobs/job?id\u003d150"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1560606248654_-1940240841",
+      "id": "20190615-224408_1463951148",
+      "dateCreated": "2019-06-15 22:44:08.654",
+      "dateStarted": "2019-06-16 04:26:58.709",
+      "dateFinished": "2019-06-16 04:27:06.793",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "KS_성별",
+      "text": "%sql\nselect * from ks_result_gender",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:32:55.379",
+      "config": {
+        "colWidth": 4.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "Gender": "string",
+                      "sum(Order)": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "xLabelStatus": "default",
+                  "rotate": {
+                    "degree": "-45"
+                  }
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "Gender",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "sum(Order)",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "tableHide": false,
+        "editorHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "Gender\tsum(Order)\n남\t96039.0\n여\t82475.0\n"
+          }
+        ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://127.0.0.1:4040/jobs/job?id\u003d151"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1560606718134_-850262033",
+      "id": "20190615-225158_1851806213",
+      "dateCreated": "2019-06-15 22:51:58.134",
+      "dateStarted": "2019-06-16 04:26:59.210",
+      "dateFinished": "2019-06-16 04:27:10.205",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "KS_나이별",
+      "text": "%sql\nselect * from ks_result_age",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:32:55.437",
+      "config": {
+        "colWidth": 4.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "Age": "string",
+                      "sum(Order)": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "Age",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "sum(Order)",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql",
+        "title": true,
+        "tableHide": false,
+        "editorHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "Age\tsum(Order)\n10대\t8086.0\n20대\t23134.0\n30대\t48436.0\n40대\t52499.0\n50대\t28597.0\n60대이상\t17762.0\n"
+          }
+        ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://127.0.0.1:4040/jobs/job?id\u003d152"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1560606727915_-143805591",
+      "id": "20190615-225207_1668899777",
+      "dateCreated": "2019-06-15 22:52:07.915",
+      "dateStarted": "2019-06-16 04:27:07.360",
+      "dateFinished": "2019-06-16 04:27:14.108",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "KEYPOINT_KS_2",
+      "text": "%pyspark\n#ks_df_by_final_day.show()\n#ks_df_by_final_day.printSchema()\nks_string_day\u003dks_df_by_final_day.select(col(\u0027Day\u0027).alias(\u0027Day\u0027),col(\u0027sum(Order)\u0027).alias(\u0027order\u0027))\nks_string_day\u003dks_string_day.sort(\u0027order\u0027)\n\nks_string_day\u003dks_string_day.select(\u0027Day\u0027)\nday_list \u003d [(row.Day.encode(\u0027utf-8\u0027)) for row in ks_string_day.collect()]\nfirst\u003dstr(day_list[6])\nsecond\u003dstr(day_list[5])\nthird\u003dstr(day_list[4])\n\n\nks_string_gender\u003dks_df_by_final_gender.select(col(\u0027Gender\u0027).alias(\u0027Gender\u0027),col(\u0027sum(Order)\u0027).alias(\u0027order\u0027))\nks_string_gender\u003dks_string_gender.sort(\u0027order\u0027)\n\nks_string_gender\u003dks_string_gender.select(\u0027Gender\u0027)\ngender_list \u003d [(row.Gender.encode(\u0027utf-8\u0027)) for row in ks_string_gender.collect()]\nfirst_gender\u003dstr(gender_list[1])\nsecond_gender\u003dstr(gender_list[0])\n\n\nks_string_age\u003dks_df_by_final_age.select(col(\u0027Age\u0027).alias(\u0027Age\u0027),col(\u0027sum(Order)\u0027).alias(\u0027order\u0027))\nks_string_age\u003dks_string_age.sort(\u0027order\u0027)\n\nks_string_age\u003dks_string_age.select(\u0027Age\u0027)\nage_list \u003d [(row.Age.encode(\u0027utf-8\u0027)) for row in ks_string_age.collect()]\nfirst_age\u003dstr(age_list[5])\nsecond_age\u003dstr(age_list[4])\nthird_age\u003dstr(age_list[3])\ns_tring\u003d\"가장 많이 판매되는 요일은 순서대로 \"+first+\",\"+second+\",\"+third+\"입니다. \"+second_gender+\"자 보다 \"+first_gender+\"자가 더 많이 구매하며\"+\" 많이 구매하는 연령층은 순서대로 \"+first_age+\", \"+second_age+\", \"+third_age+\"입니다.\"\nprint(s_tring)",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:33:54.431",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 15.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python",
+        "title": true,
+        "editorHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "가장 많이 판매되는 요일은 순서대로 일,토,금입니다. 여자 보다 남자가 더 많이 구매하며 많이 구매하는 연령층은 순서대로 40대, 30대, 50대입니다.\n"
+          }
+        ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://127.0.0.1:4040/jobs/job?id\u003d174",
+            "http://127.0.0.1:4040/jobs/job?id\u003d175",
+            "http://127.0.0.1:4040/jobs/job?id\u003d176",
+            "http://127.0.0.1:4040/jobs/job?id\u003d177",
+            "http://127.0.0.1:4040/jobs/job?id\u003d178",
+            "http://127.0.0.1:4040/jobs/job?id\u003d179",
+            "http://127.0.0.1:4040/jobs/job?id\u003d180",
+            "http://127.0.0.1:4040/jobs/job?id\u003d181",
+            "http://127.0.0.1:4040/jobs/job?id\u003d182"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1560607198465_-270310620",
+      "id": "20190615-225958_720293929",
+      "dateCreated": "2019-06-15 22:59:58.465",
+      "dateStarted": "2019-06-16 04:33:26.003",
+      "dateFinished": "2019-06-16 04:33:46.654",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "YY_1",
+      "text": "%pyspark\n#BL\u003d[(2,1),(3,1),())]\n\n\ndf_chicken_2019 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/chicken/chicken_2019.csv\")\ndf_chicken_2019\u003ddf_chicken_2019.drop(\"_c6\")\n\ndf_chicken_2019 \u003d df_chicken_2019.select(col(\"_c0\").alias(\"Dates\"), col(\"_c1\").alias(\"Day\"),col(\"_c2\").alias(\"Gender\"),\n                  col(\"_c3\").alias(\"Age\"),col(\"_c4\").alias(\"Si\"), col(\"_c5\").alias(\"Gu\"),\n                   col(\"_c7\").alias(\"Store\"),col(\"_c8\").cast(\u0027float\u0027).alias(\"Order\"))\ndf_chicken_2019 \u003d df_chicken_2019.drop(\"Si\").drop(\"Store\").drop(\"Day\").drop(\"Gender\").drop(\"Age\")\n\n\n##\ndf_china_2019 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/china/china_2019.csv\")\ndf_china_2019 \u003d df_china_2019.drop(\"_c6\")\n\ndf_china_2019 \u003d df_china_2019.select(col(\"_c0\").alias(\"Dates\"), col(\"_c1\").alias(\"Day\"),col(\"_c2\").alias(\"Gender\"),\n                  col(\"_c3\").alias(\"Age\"),col(\"_c4\").alias(\"Si\"), col(\"_c5\").alias(\"Gu\"),\n                   col(\"_c7\").alias(\"Store\"),col(\"_c8\").cast(\u0027float\u0027).alias(\"Order\"))\ndf_china_2019 \u003d df_china_2019.drop(\"Si\").drop(\"Store\").drop(\"Day\").drop(\"Gender\").drop(\"Age\")\n\n##\ndf_pizza_2019 \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/pizza/pizza_2019.csv\")\n\ndf_pizza_2019 \u003d df_pizza_2019.select(col(\"_c0\").alias(\"Dates\"), col(\"_c1\").alias(\"Day\"),col(\"_c2\").alias(\"Gender\"),\n                  col(\"_c3\").alias(\"Age\"),col(\"_c4\").alias(\"Si\"), col(\"_c5\").alias(\"Gu\"),\n                   col(\"_c6\").alias(\"Store\"),col(\"_c7\").cast(\u0027float\u0027).alias(\"Order\"))\n\ndf_pizza_2019 \u003d df_pizza_2019.drop(\"Si\").drop(\"Store\").drop(\"Day\").drop(\"Gender\").drop(\"Age\")\n\n####이중에서 2019_df_pizza, chicken, china 를 쓰는데 그중에서도 Dates가 3월인거만 골라서 Dataframe 만들기 \ndf_china_2019\u003ddf_china_2019.filter(col(\"Dates\").substr(5,2)\u003d\u003d(\"03\"))\ndf_pizza_2019\u003ddf_pizza_2019.filter(col(\"Dates\").substr(5,2)\u003d\u003d(\"03\"))\ndf_chicken_2019\u003ddf_chicken_2019.filter(col(\"Dates\").substr(5,2)\u003d\u003d(\"03\"))\n\n### 구별 주문량 구하기 \ndf_chicken_2019 \u003ddf_chicken_2019.groupby(\u0027Gu\u0027).agg({\u0027Order\u0027:\u0027sum\u0027}).select(col(\"Gu\").alias(\"Gu\"),col(\"sum(Order)\").alias(\"Order\"))\ndf_pizza_2019 \u003ddf_pizza_2019.groupby(\u0027Gu\u0027).agg({\u0027Order\u0027:\u0027sum\u0027}).select(col(\"Gu\").alias(\"Gu\"),col(\"sum(Order)\").alias(\"Order\"))\ndf_china_2019 \u003ddf_china_2019.groupby(\u0027Gu\u0027).agg({\u0027Order\u0027:\u0027sum\u0027}).select(col(\"Gu\").alias(\"Gu\"),col(\"sum(Order)\").alias(\"Order\"))\n\n####가게 데이터 load\ndf_store_region \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"false\").load(\"data/store/store_region.csv\")\n\ndf_store_region \u003d df_store_region.select(col(\"_c0\").alias(\"id\"), col(\"_c1\").alias(\"store_type\"),col(\"_c2\").alias(\"region\"))\n\n### 처음부터 업종별로 3개의 df로 나누자! \ndf_china_region\u003ddf_store_region.filter(col(\"store_type\")\u003d\u003d(\"중국음식/중국집\"))\ndf_chicken_region\u003ddf_store_region.filter(col(\"store_type\")\u003d\u003d(\"후라이드/양념치킨\"))\ndf_pizza_region\u003ddf_store_region.filter(col(\"store_type\")\u003d\u003d(\"피자전문\"))\n\n### 구별 가게수 파악 df ! \n\ndf_china_region \u003ddf_china_region.groupby(\u0027region\u0027).agg({\u0027id\u0027:\u0027count\u0027}).select(col(\"region\").alias(\"Gu\"),col(\"count(id)\").alias(\"Count\"))\ndf_chicken_region \u003ddf_chicken_region.groupby(\u0027region\u0027).agg({\u0027id\u0027:\u0027count\u0027}).select(col(\"region\").alias(\"Gu\"),col(\"count(id)\").alias(\"Count\"))\ndf_pizza_region \u003ddf_pizza_region.groupby(\u0027region\u0027).agg({\u0027id\u0027:\u0027count\u0027}).select(col(\"region\").alias(\"Gu\"),col(\"count(id)\").alias(\"Count\"))\n\n\n## 구별 좌표 load\ndf_location \u003d sqlContext.read.format(\"com.databricks.spark.csv\").option(\"header\",\"True\").load(\"data/out.csv\").drop(\"_c0\")\n\nz.z.run(\"20190615-220357_839122366\")",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:36:50.951",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python",
+        "title": false,
+        "editorHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://127.0.0.1:4040/jobs/job?id\u003d162",
+            "http://127.0.0.1:4040/jobs/job?id\u003d163",
+            "http://127.0.0.1:4040/jobs/job?id\u003d164",
+            "http://127.0.0.1:4040/jobs/job?id\u003d165",
+            "http://127.0.0.1:4040/jobs/job?id\u003d166"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1560601553127_-1348373022",
+      "id": "20190615-212553_579726175",
+      "dateCreated": "2019-06-15 21:25:53.127",
+      "dateStarted": "2019-06-16 04:28:58.784",
+      "dateFinished": "2019-06-16 04:28:59.726",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "INPUT_YY_2",
+      "text": "%pyspark\nstore_type\u003dz.select(\"store_type\", [(\"pizza\",\"pizza\"),\n                    (\"chicken\",\"chicken\"),\n                    (\"china\",\"chinese_food\"),\n                    ])\nz.put(\"yy_input_store_type\",store_type) \nyy_input_store_type \u003dz.get(\"yy_input_store_type\")\nz.z.run(\"20190615-222329_795832894\")",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:37:06.369",
+      "config": {
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python",
+        "runOnSelectionChange": true,
+        "title": false,
+        "editorHide": true
+      },
+      "settings": {
+        "params": {
+          "store_type": "chicken"
+        },
+        "forms": {
+          "store_type": {
+            "type": "Select",
+            "options": [
+              {
+                "value": "pizza",
+                "displayName": "pizza"
+              },
+              {
+                "value": "chicken",
+                "displayName": "chicken"
+              },
+              {
+                "value": "china",
+                "displayName": "chinese_food"
+              }
+            ],
+            "name": "store_type",
+            "displayName": "store_type",
+            "defaultValue": "",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1560603837229_1535940304",
+      "id": "20190615-220357_839122366",
+      "dateCreated": "2019-06-15 22:03:57.229",
+      "dateStarted": "2019-06-16 04:36:18.165",
+      "dateFinished": "2019-06-16 04:36:18.216",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "YY_3",
+      "text": "%pyspark\nif(yy_input_store_type\u003d\u003d\"pizza\"):\n    map_final_df \u003d df_pizza_region.join(df_pizza_2019, \"Gu\")\nelif (yy_input_store_type\u003d\u003d\"chicken\"):\n    map_final_df \u003d df_chicken_region.join(df_chicken_2019, \"Gu\")\nelif (yy_input_store_type\u003d\u003d\"china\"):\n    map_final_df \u003d df_china_region.join(df_china_2019, \"Gu\")\nmap_final_df\u003dmap_final_df.withColumn(\u0027Density\u0027,(map_final_df.Order/map_final_df.Count)).drop(\u0027Order\u0027).drop(\u0027Count\u0027)\nmap_final_df\u003dmap_final_df.join(df_location,\"Gu\")\n\nz.z.run(\"20190616-021127_489718939\")",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:34:14.284",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python",
+        "title": false,
+        "editorHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1560605009616_-2090215283",
+      "id": "20190615-222329_795832894",
+      "dateCreated": "2019-06-15 22:23:29.616",
+      "dateStarted": "2019-06-16 04:36:18.249",
+      "dateFinished": "2019-06-16 04:36:18.296",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "YY_4",
+      "text": "%pyspark\ndef drawSeoul(targetData, blockedMap, cmapname):\n    gamma \u003d 0.75\n\n    whitelabelmin \u003d (builtins.max(blockedMap[targetData]) - builtins.min(blockedMap[targetData])) * 0.25 + builtins.min(blockedMap[targetData]) #with column, \n    datalabel \u003d targetData\n    \n    vmin \u003d builtins.min(blockedMap[targetData])\n    vmax \u003d builtins.max(blockedMap[targetData])\n    \n\n    HAN_Riv \u003d [(0,2),(1,2),(1,3),(2,3),(3,3),(3,4),(4,4),(4,3),(5,3),(6,3),(6,2),(7,2)] #한강 라인\n    \n    mapdata \u003d blockedMap.pivot(index\u003d\u0027y\u0027, columns\u003d\u0027x\u0027, values\u003dtargetData)\n    masked_mapdata \u003d np.ma.masked_where(np.isnan(mapdata), mapdata)\n    \n    plt.figure(figsize\u003d(7,4))#창크\n    plt.pcolor(masked_mapdata, vmin\u003dvmin, vmax\u003dvmax, cmap\u003dcmapname, edgecolor\u003d\u0027#aaaaaa\u0027, linewidth\u003d0.5)\n    \n    # 지역 이름 표시\n    for idx, row in blockedMap.iterrows():\n        annocolor \u003d \u0027black\u0027 if row[targetData] \u003e whitelabelmin else \u0027white\u0027\n\n        dispname \u003d row[\u0027Eng_Gu\u0027]\n        # 서대문구, 서귀포시 같이 이름이 3자 이상인 경우에 작은 글자로 표시한다.\n        if len(dispname) \u003e\u003d 3:\n            fontsize, linespacing \u003d 11, 2\n        else:\n            fontsize, linespacing \u003d 12.5, 2.7\n        \n        plt.annotate(dispname, ((float(row[\u0027x\u0027])-0.5), (float(row[\u0027y\u0027])-0.5)), weight\u003d\u0027bold\u0027, fontsize\u003dfontsize, ha\u003d\u0027center\u0027, va\u003d\u0027center\u0027, color\u003dannocolor, linespacing\u003dlinespacing)\n    # 한강 경계 그린다.\n        xs, ys \u003d zip(*HAN_Riv)\n        plt.plot(xs, ys, c\u003d\u0027#00CCFF\u0027, lw\u003d8)\n        \n    plt.gca().invert_yaxis()\n    #plt.gca().set_aspect(1)\n\n    plt.axis(\u0027off\u0027)\n\n    cb \u003d plt.colorbar(shrink\u003d1, aspect\u003d10)\n    cb.set_label(\"Density\")\n    plt.tight_layout()\n    plt.show()\nz.z.run(\"20190616-032619_1462180654\")#TO_YY_5\n",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:40:03.838",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python",
+        "title": false,
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1560618687609_-712605769",
+      "id": "20190616-021127_489718939",
+      "dateCreated": "2019-06-16 02:11:27.610",
+      "dateStarted": "2019-06-16 04:40:03.868",
+      "dateFinished": "2019-06-16 04:40:04.375",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "DENSITY_VISUALIZATION_YY_5",
+      "text": "%pyspark\n\ndrawSeoul(\u0027Density\u0027, map_final_df.toPandas(), \u0027Reds_r\u0027)",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:37:09.725",
+      "config": {
+        "colWidth": 6.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 277.0,
+              "optionOpen": false
+            }
+          }
+        },
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python",
+        "title": true,
+        "editorHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv style\u003d\u0027width:auto;height:auto\u0027\u003e\u003cimg src\u003ddata:image/png;base64,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\u003d\u003d style\u003d\u0027width\u003dauto;height:auto\u0027\u003e\u003cdiv\u003e\n"
+          }
+        ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://127.0.0.1:4040/jobs/job?id\u003d187"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1560623179136_32727464",
+      "id": "20190616-032619_1462180654",
+      "dateCreated": "2019-06-16 03:26:19.136",
+      "dateStarted": "2019-06-16 04:40:04.382",
+      "dateFinished": "2019-06-16 04:40:12.767",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "INPUT_HY2_1",
+      "text": "%pyspark\nregion\u003dz.select(\"region\", [(\"종로구\",\"종로구\"),\n                    (\"중구\",\"중구\"),\n                     (\"용산구\",\"용산구\"),\n                      (\"성동구\",\"성동구\"),\n                       (\"광진구\",\"광진구\"),\n                        (\"동대문구\",\"동대문구\"),\n                         (\"중랑구\",\"중랑구\"),\n                          (\"성북구\",\"성북구\"),\n                           (\"강북구\",\"강북구\"),\n                            (\"도봉구\",\"도봉구\"),\n                             (\"노원구\",\"노원구\"),\n                             (\"은평구\",\"은평구\"),\n                             (\"서대문구\",\"서대문구\"),\n                             (\"마포구\",\"마포구\"),\n                             (\"양천구\",\"양천구\"),\n                             (\"강서구\",\"강서구\"),\n                             (\"구로구\",\"구로구\"),\n                             (\"영등포구\",\"영등포구\"),\n                             (\"금천구\",\"금천구\"),\n                             (\"동작구\",\"동작구\"),\n                             (\"관악구\",\"관악구\"),\n                              (\"서초구\",\"서초구\"),\n                               (\"강남구\",\"강남구\"),\n                                (\"송파구\",\"송파구\"),\n                                 (\"강동구\",\"강동구\"),])\nz.put(\"ans_input_region\",region)\n\nstore_type\u003dz.select(\"store_type\", [(\"pizza\",\"pizza\"),\n                    (\"chicken\",\"chicken\"),\n                    (\"china\",\"chinese_food\"),\n                    ])\nz.put(\"ans_input_store_type\",store_type)\n\nage\u003dz.select(\"age\", [(\"10대\",\"10대\"),\n                    (\"20대\",\"20대\"),\n                    (\"30대\",\"30대\"),\n                    (\"40대\",\"40대\"),\n                    (\"50대\",\"50대\"),\n                    (\"60대이상\",\"60대이상\"),\n                    ])\nz.put(\"ans_input_age\",age)\n\n##\ngender\u003dz.select(\"gender\", [(\"남\",\"남\"),\n                    (\"여\",\"여\"),\n                    ])\nz.put(\"ans_input_gender\",gender)\n\n\n##\n\nstart_date\u003dz.textbox(\"start date: ex)20180101\")\nz.put(\"ans_input_start_date\", start_date)\n\nend_date\u003dz.textbox(\"end date: ex)20181231\")\nz.put(\"ans_input_end_date\", end_date)\n\nans_select_region\u003dz.get(\"ans_input_region\")\n#ans_select_region\u003dstr(select_region.encode(\u0027utf-8\u0027))\nans_select_store_type\u003dz.get(\"ans_input_store_type\")\nans_select_store_type\u003dstr(ans_select_store_type)\nans_select_start_date\u003dz.get(\"ans_input_start_date\")\nans_select_start_date\u003dstr(ans_select_start_date)\nans_select_end_date\u003dz.get(\"ans_input_end_date\")\nans_select_end_date\u003dstr(ans_select_end_date)\nans_select_age \u003d z.get(\"ans_input_age\")\nans_select_gender \u003d z.get(\"ans_input_gender\")\n\n#print(ans_select_region,ans_select_store_type,ans_select_start_date,ans_select_age,ans_select_gender)\n\nz.z.run(\"20190616-035048_605319699\")",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:37:11.341",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python",
+        "editorHide": true,
+        "title": false,
+        "runOnSelectionChange": true
+      },
+      "settings": {
+        "params": {
+          "region": "강서구",
+          "store_type": "china",
+          "age": "30대",
+          "gender": "남",
+          "start date: ex)20180101": "20170303",
+          "end date: ex)20181231": "20170706"
+        },
+        "forms": {
+          "region": {
+            "type": "Select",
+            "options": [
+              {
+                "value": "종로구",
+                "displayName": "종로구"
+              },
+              {
+                "value": "중구",
+                "displayName": "중구"
+              },
+              {
+                "value": "용산구",
+                "displayName": "용산구"
+              },
+              {
+                "value": "성동구",
+                "displayName": "성동구"
+              },
+              {
+                "value": "광진구",
+                "displayName": "광진구"
+              },
+              {
+                "value": "동대문구",
+                "displayName": "동대문구"
+              },
+              {
+                "value": "중랑구",
+                "displayName": "중랑구"
+              },
+              {
+                "value": "성북구",
+                "displayName": "성북구"
+              },
+              {
+                "value": "강북구",
+                "displayName": "강북구"
+              },
+              {
+                "value": "도봉구",
+                "displayName": "도봉구"
+              },
+              {
+                "value": "노원구",
+                "displayName": "노원구"
+              },
+              {
+                "value": "은평구",
+                "displayName": "은평구"
+              },
+              {
+                "value": "서대문구",
+                "displayName": "서대문구"
+              },
+              {
+                "value": "마포구",
+                "displayName": "마포구"
+              },
+              {
+                "value": "양천구",
+                "displayName": "양천구"
+              },
+              {
+                "value": "강서구",
+                "displayName": "강서구"
+              },
+              {
+                "value": "구로구",
+                "displayName": "구로구"
+              },
+              {
+                "value": "영등포구",
+                "displayName": "영등포구"
+              },
+              {
+                "value": "금천구",
+                "displayName": "금천구"
+              },
+              {
+                "value": "동작구",
+                "displayName": "동작구"
+              },
+              {
+                "value": "관악구",
+                "displayName": "관악구"
+              },
+              {
+                "value": "서초구",
+                "displayName": "서초구"
+              },
+              {
+                "value": "강남구",
+                "displayName": "강남구"
+              },
+              {
+                "value": "송파구",
+                "displayName": "송파구"
+              },
+              {
+                "value": "강동구",
+                "displayName": "강동구"
+              }
+            ],
+            "name": "region",
+            "displayName": "region",
+            "defaultValue": "",
+            "hidden": false
+          },
+          "store_type": {
+            "type": "Select",
+            "options": [
+              {
+                "value": "pizza",
+                "displayName": "pizza"
+              },
+              {
+                "value": "chicken",
+                "displayName": "chicken"
+              },
+              {
+                "value": "china",
+                "displayName": "chinese_food"
+              }
+            ],
+            "name": "store_type",
+            "displayName": "store_type",
+            "defaultValue": "",
+            "hidden": false
+          },
+          "age": {
+            "type": "Select",
+            "options": [
+              {
+                "value": "10대",
+                "displayName": "10대"
+              },
+              {
+                "value": "20대",
+                "displayName": "20대"
+              },
+              {
+                "value": "30대",
+                "displayName": "30대"
+              },
+              {
+                "value": "40대",
+                "displayName": "40대"
+              },
+              {
+                "value": "50대",
+                "displayName": "50대"
+              },
+              {
+                "value": "60대이상",
+                "displayName": "60대이상"
+              }
+            ],
+            "name": "age",
+            "displayName": "age",
+            "defaultValue": "",
+            "hidden": false
+          },
+          "gender": {
+            "type": "Select",
+            "options": [
+              {
+                "value": "남",
+                "displayName": "남"
+              },
+              {
+                "value": "여",
+                "displayName": "여"
+              }
+            ],
+            "name": "gender",
+            "displayName": "gender",
+            "defaultValue": "",
+            "hidden": false
+          },
+          "start date: ex)20180101": {
+            "type": "TextBox",
+            "name": "start date: ex)20180101",
+            "displayName": "start date: ex)20180101",
+            "defaultValue": "",
+            "hidden": false
+          },
+          "end date: ex)20181231": {
+            "type": "TextBox",
+            "name": "end date: ex)20181231",
+            "displayName": "end date: ex)20181231",
+            "defaultValue": "",
+            "hidden": false
+          }
+        }
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1560623321210_1525034038",
+      "id": "20190616-032841_763210623",
+      "dateCreated": "2019-06-16 03:28:41.210",
+      "dateStarted": "2019-06-16 04:30:38.818",
+      "dateFinished": "2019-06-16 04:30:39.546",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "HY2_2",
+      "text": "%pyspark\nif ans_select_store_type\u003d\u003d\"chicken\":\n    ans_df \u003d df_chicken_concat.filter((df_chicken_concat.Gu\u003d\u003dans_select_region)\u0026(df_chicken_concat.Age\u003d\u003dans_select_age)\n                                            \u0026 (df_chicken_concat.Dates\u003e\u003dans_select_start_date) \u0026 (df_chicken_concat.Dates\u003c\u003dans_select_end_date) \u0026 (df_chicken_concat.Gender \u003d\u003dans_select_gender))\nelif ans_select_store_type\u003d\u003d\"pizza\":\n    ans_df \u003d df_pizza_concat.filter((df_pizza_concat.Gu\u003d\u003dans_select_region)\u0026(df_pizza_concat.Age\u003d\u003dans_select_age)\n                                            \u0026 (df_pizza_concat.Dates\u003e\u003dans_select_start_date) \u0026 (df_pizza_concat.Dates\u003c\u003dans_select_end_date) \u0026 (df_pizza_concat.Gender \u003d\u003dans_select_gender))\nelse: #chinese food\n    ans_df \u003d df_china_concat.filter((df_china_concat.Gu\u003d\u003dans_select_region)\u0026(df_china_concat.Age\u003d\u003dans_select_age)\n                                            \u0026 (df_china_concat.Dates\u003e\u003dans_select_start_date) \u0026 (df_china_concat.Dates\u003c\u003dans_select_end_date) \u0026 (df_china_concat.Gender \u003d\u003dans_select_gender))\n\nans_df\u003dans_df.groupby(\u0027Day\u0027).agg({\u0027Order\u0027:\u0027sum\u0027}).select(col(\"Day\").alias(\"Day\"),col(\"sum(Order)\").alias(\"Order\"))\n\nz.z.run(\"20190616-035117_1104224450\")",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:37:13.042",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python",
+        "title": false,
+        "editorHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1560624648312_1956432597",
+      "id": "20190616-035048_605319699",
+      "dateCreated": "2019-06-16 03:50:48.312",
+      "dateStarted": "2019-06-16 04:30:39.546",
+      "dateFinished": "2019-06-16 04:30:40.139",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "HY2_3",
+      "text": "%pyspark\ndef make_order(day):\n    if day\u003d\u003du\"월\":\n        return 0\n    elif day \u003d\u003du\"화\":\n        return 1\n    elif day \u003d\u003du\"수\":\n        return 2\n    elif day \u003d\u003du\"목\":\n        return 3\n    elif day \u003d\u003du\"금\":\n        return 4\n    elif day \u003d\u003du\"토\":\n        return 5\n    else:\n        return 6\n        \n\nudf_make_order \u003d udf(make_order,IntegerType())\nans_df\u003dans_df.withColumn(\u0027day_order\u0027,udf_make_order(ans_df[\u0027Day\u0027]))\nans_df\u003dans_df.sort(\u0027day_order\u0027).drop(\u0027day_order\u0027)\nans_df.registerTempTable(\"ans_result\")\n\nz.z.run(\"20190616-035155_1932786312\")",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:37:14.063",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/python",
+        "title": false,
+        "editorHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1560624677766_-708157851",
+      "id": "20190616-035117_1104224450",
+      "dateCreated": "2019-06-16 03:51:17.766",
+      "dateStarted": "2019-06-16 04:30:40.144",
+      "dateFinished": "2019-06-16 04:30:40.201",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "DAY_ORDER_VISUALIZATION_HY2_4",
+      "text": "%sql\nselect * from ans_result\n",
+      "user": "anonymous",
+      "dateUpdated": "2019-06-16 04:32:55.497",
+      "config": {
+        "colWidth": 12.0,
+        "fontSize": 9.0,
+        "enabled": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "Day": "string",
+                      "Order": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "Day",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "Order",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/sql",
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "Day\tOrder\n월\t2667.0\n화\t2924.0\n수\t2785.0\n목\t2704.0\n금\t3045.0\n토\t4395.0\n일\t4736.0\n"
+          }
+        ]
+      },
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            "http://127.0.0.1:4040/jobs/job?id\u003d173"
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "apps": [],
+      "jobName": "paragraph_1560624715423_-1879921853",
+      "id": "20190616-035155_1932786312",
+      "dateCreated": "2019-06-16 03:51:55.423",
+      "dateStarted": "2019-06-16 04:30:40.233",
+      "dateFinished": "2019-06-16 04:30:48.372",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "FINALE",
+  "id": "2EGARV569",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {
+    "angular:shared_process": [],
+    "spark:shared_process": [
+      {
+        "name": "gender",
+        "object": 2.0,
+        "noteId": "2EGARV569"
+      },
+      {
+        "name": "age",
+        "object": 5.0,
+        "noteId": "2EGARV569"
+      },
+      {
+        "name": "myData",
+        "object": [
+          [
+            "강남구",
+            "40161",
+            "강남구",
+            "37.4954795837",
+            "127.048957825"
+          ],
+          [
+            "강동구",
+            "36929",
+            "강동구",
+            "37.5495605469",
+            "127.146942139"
+          ],
+          [
+            "강북구",
+            "28217",
+            "강북구",
+            "37.6339302063",
+            "127.017944336"
+          ],
+          [
+            "강서구",
+            "48383",
+            "강서구",
+            "37.5610198975",
+            "126.822036743"
+          ],
+          [
+            "관악구",
+            "38282",
+            "관악구",
+            "37.4663963318",
+            "126.946304321"
+          ],
+          [
+            "광진구",
+            "30617",
+            "광진구",
+            "37.5450363159",
+            "127.086387634"
+          ],
+          [
+            "구로구",
+            "37786",
+            "구로구",
+            "37.4948005676",
+            "126.856323242"
+          ],
+          [
+            "금천구",
+            "23945",
+            "금천구",
+            "37.4605255127",
+            "126.901435852"
+          ],
+          [
+            "노원구",
+            "46438",
+            "노원구",
+            "37.6517410278",
+            "127.074562073"
+          ],
+          [
+            "도봉구",
+            "31346",
+            "도봉구",
+            "37.6685295105",
+            "127.032791138"
+          ],
+          [
+            "동대문구",
+            "28315",
+            "동대문구",
+            "37.582157135",
+            "127.060173035"
+          ],
+          [
+            "동작구",
+            "32817",
+            "동작구",
+            "37.4988708496",
+            "126.950904846"
+          ],
+          [
+            "마포구",
+            "28120",
+            "마포구",
+            "37.5691986084",
+            "126.898254395"
+          ],
+          [
+            "서대문구",
+            "26097",
+            "서대문구",
+            "37.5767707825",
+            "126.939605713"
+          ],
+          [
+            "서초구",
+            "32348",
+            "서초구",
+            "37.4708137512",
+            "127.028953552"
+          ],
+          [
+            "성동구",
+            "25324",
+            "성동구",
+            "37.5496368408",
+            "127.041320801"
+          ],
+          [
+            "성북구",
+            "35654",
+            "성북구",
+            "37.6043624878",
+            "127.028709412"
+          ],
+          [
+            "송파구",
+            "55644",
+            "송파구",
+            "37.5040473938",
+            "127.11618042"
+          ],
+          [
+            "양천구",
+            "39793",
+            "양천구",
+            "37.5241546631",
+            "126.855880737"
+          ],
+          [
+            "영등포구",
+            "33902",
+            "영등포구",
+            "37.5209617615",
+            "126.909378052"
+          ],
+          [
+            "용산구",
+            "19350",
+            "용산구",
+            "37.5305786133",
+            "126.979896545"
+          ],
+          [
+            "은평구",
+            "41123",
+            "은평구",
+            "37.6172294617",
+            "126.926979065"
+          ],
+          [
+            "종로구",
+            "13472",
+            "종로구",
+            "37.5931510925",
+            "126.977058411"
+          ],
+          [
+            "중구",
+            "11122",
+            "중구",
+            "37.5596466064",
+            "126.99571228"
+          ],
+          [
+            "중랑구",
+            "37129",
+            "중랑구",
+            "37.5970802307",
+            "127.092445374"
+          ]
+        ],
+        "noteId": "2EGARV569"
+      }
+    ]
+  },
+  "config": {
+    "isZeppelinNotebookCronEnable": false,
+    "looknfeel": "report",
+    "personalizedMode": "false"
+  },
+  "info": {}
+}
